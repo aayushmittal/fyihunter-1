@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset=utf-8 />
+<title>GeoJSON from live realtime data</title>
+<meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+<script src='https://api.tiles.mapbox.com/mapbox.js/v2.2.1/mapbox.js'></script>
+<link href='https://api.tiles.mapbox.com/mapbox.js/v2.2.1/mapbox.css' rel='stylesheet' />
+<style>
+  body { margin:0; padding:0; }
+  #map { position:absolute; top:0; bottom:0; width:100%; }
+.ui-control {
+  background:#fff;
+  position:absolute;
+  top:10px;
+  right:10px;
+  padding:10px;
+  z-index:100;
+  border-radius:3px;
+  }
+</style>
+</head>
+<body>
+
+<div id='output' class='ui-control'>
+  Click: <code id='click'></code><br/>
+  Mousemove: <code id='mousemove'></code><br/>
+</div>
+<div id='map'></div>
+<div id="a"></div>
+<script>
+L.mapbox.accessToken = 'pk.eyJ1Ijoibml0aW4xMjMiLCJhIjoiNTMwZmUzNTQ1NzRkYmY4OTE1MjJkOTNhNmRlMGE4ZDYifQ.IYlLXR8kgPwt137K_x7Nzg';
+var map = L.mapbox.map('map', 'mapbox.streets')
+    .setView([38, -102.0], 2);
+
+// As with any other AJAX request, this technique is subject to the Same Origin Policy:
+// http://en.wikipedia.org/wiki/Same_origin_policy
+var featureLayer = L.mapbox.featureLayer()
+    .loadURL('http://localhost:1337/mapdata')
+    // Once this layer loads, we set a timer to load it again in a few seconds.
+    .on('ready', run)
+    .addTo(map);
+
+function run() {
+    featureLayer.eachLayer(function(l) {
+        map.panTo(l.getLatLng());
+    });
+    window.setTimeout(function() {
+        featureLayer.loadURL('http://localhost:1337/mapdata');
+    }, 2000);
+}
+    //map.setView([lat,lng],12);
+
+
+    /*
+    loading the /mapdata json file here*/
+    var xmlhttp = new XMLHttpRequest();
+    var url = "http://localhost:1337/mapdata";
+
+    xmlhttp.onreadystatechange = function() {
+        if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+            var myArr = JSON.parse(xmlhttp.responseText);
+            myFunction(myArr);
+        }
+    }
+    xmlhttp.open("GET", url, true);
+    xmlhttp.send();
+
+    function myFunction(arr) {
+        var out = "";
+        var i;
+             
+        for(i = 0; i < arr.length; i++) {
+            out += '<a href="' + arr[i].url + '">' + 
+            arr[i].display + '</a><br>';
+            if(arr[i].properties.status=="verified") {
+              
+            }
+        }
+       
+    }
+
+
+</script>
+</body>
+</html>
